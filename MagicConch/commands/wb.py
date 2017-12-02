@@ -44,27 +44,27 @@ def decipher_wb_string(message):                            # param_string = !wb
 # --------------------------------------------------------------------------------
 #
 # Usage #1:     wb_cmd()
-# Result:       Reads a random line from the comlete database: wb.txt
+# Result:       Reads a random line from the complete database: wb.txt
 # Example:      wb_cmd()
 # Output:       [5/34] <SP> Hello World!
 #
 # Usage #2:     wb_cmd(#)
-# Result:       Reads the last line from the comlete database: wb.txt
+# Result:       Reads the last line from the complete  database: wb.txt
 # Example:      wb_cmd(#)
 # Output:       [34/34] <Someone> This is my last test
 #
 # Usage #3:     wb_cmd(#, <string>)
-# Result:       Reads a random line containing <string> from the comlete database: wb.txt
+# Result:       Reads a random line containing <string> from the complete database: wb.txt
 # Example:      wb_cmd(#, wbs)
 # Output:       [3/7][20/34] <Someone> You have too much fun with WBs
 #
 # Usage #4:     wb_cmd(<#>)
-# Result:       Reads the <#>-th line from the comlete database: wb.txt
+# Result:       Reads the <#>-th line from the complete database: wb.txt
 # Example:      wb_cmd(7)
 # Output:       [7/34] <Someone> What should I say here?
 #
 # Usage #5:     wb_cmd(<#>, <string>)
-# Result:       Reads the <#>-th line containing <string> from the comlete database: wb.txt
+# Result:       Reads the <#>-th line containing <string> from the complete database: wb.txt
 # Example:      wb_cmd(5, wbs)
 # Output:       [5/7][22/34] <Someone> I'm starting to think you live to add WBs
 #
@@ -80,8 +80,8 @@ def decipher_wb_string(message):                            # param_string = !wb
 #
 # Usage #8:     wb_cmd(<nick>, #, <string>)
 # Result:       Reads a random line containing <string> from <nick>.txt
-# Example:      wb_cmd(SP, #, one occurence)
-# Output:       [1/1][1/1] <SP> Notice that total count drops due to one occurence
+# Example:      wb_cmd(SP, #, one occurrence)
+# Output:       [1/1][1/1] <SP> Notice that total count drops due to one occurrence
 #
 # Usage #9:     wb_cmd(<nick>, <#>)
 # Result:       Reads the <#>-th line from <nick>.txt

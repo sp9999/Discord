@@ -118,12 +118,14 @@ def remove(param_file, param_tempfile, param_lastline=False, param_entryno=None,
     with open(param_file, encoding="utf8") as inputFile:
         with open(param_tempfile, "w", encoding="utf8") as outputFile:
             lineCount = 0
+            lineNoRemoved = -1
             previousLine = ""
             skip = False
             for line in inputFile:
                 if len(previousLine) > 0:
                     if isRemoveLineFound(param_entryno, lineCount, param_line, previousLine[:-1]):
                         removedLine = previousLine
+                        lineNoRemoved = lineCount
                         skip = True
 
                 if not skip:
@@ -138,11 +140,13 @@ def remove(param_file, param_tempfile, param_lastline=False, param_entryno=None,
                 previousLine = line
                 skip = False
 
-                if isRemoveLineFound(param_entryno, lineCount, param_line, previousLine[:-1]):
-                    removedLine = line
+            if isRemoveLineFound(param_entryno, lineCount, param_line, previousLine[:-1]):
+                removedLine = previousLine
+                lineNoRemoved = lineCount
 
             if param_lastline:
                 removedLine = previousLine
+                lineNoRemoved = lineCount
             elif lineCount != param_entryno and param_line != previousLine[:-1]:
                 for i in range(3):
                     try:
@@ -153,7 +157,7 @@ def remove(param_file, param_tempfile, param_lastline=False, param_entryno=None,
 
     removeAndRenameFile(param_file, param_tempfile)
 
-    return removedLine[:-1]
+    return removedLine[:-1], lineNoRemoved
 
 
 def isRemoveLineFound(remove_lineno, curr_lineno, remove_line, curr_line):
@@ -334,6 +338,48 @@ def getServerTimer(serverName):
             for line in fp:
                 return int(line.strip())
     return secret.ServerDefaultTimer[serverName]
+
+
+# ---------------------------------------------------------------------------------
+#
+# Description:  Get a list of all the files in current server
+# Return:       List of everyone's file
+# Note:         Ignore special files
+#
+# ---------------------------------------------------------------------------------
+def getFilesInPath(serverName):
+    path = attemptToGetPath(serverName)
+    filtered_files = []
+    for path, dirs, files in os.walk(path):
+        for file in files:
+            # only accept .txt files
+            name = file.split(".", 1)
+            if len(name) == 1 or name[1] != "txt":
+                continue
+
+            # filter special files
+            if name[0] in config.AllSpecialFiles:
+                continue
+
+            filtered_files.append(file)
+    return filtered_files
+
+
+# ---------------------------------------------------------------------------------
+#
+# Description:  Finds if a line exists in a file
+# Return:       True or False
+# Note:         Assumes you already have full path in filename
+#
+# ---------------------------------------------------------------------------------
+def isLineInFile(filename, line):
+    with open(filename, encoding="utf8") as fp:
+        # iterate through each line in nickFile
+        for iLine in fp:
+            if line == iLine:
+                return True
+
+        return False
 
 
 def textBlock(string):

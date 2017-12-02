@@ -10,6 +10,7 @@ import commands.swap
 import commands.add
 import commands.rem
 import commands.timer
+import commands.info
 import utility
 import QuoteTimer
 
@@ -37,7 +38,7 @@ async def on_ready():
 @client.command(pass_context=True, brief="Reads a line from a file")
 async def wb(ctx):
     """
-        Usage: !wb <nick> <line no. or '#''> <search term> - Line from <nick> file.
+        Usage: !wb <nick> <line no. or '#'> <search term> - Line from <nick> file.
         Line: specifies line entry or the latest entry ('#').
         Search: Anything after <line param> specifies only lines containing <search term>.
         Optional: You can omit <nick> to use the master file which will grab from all possible quotes.
@@ -46,6 +47,22 @@ async def wb(ctx):
         return
 
     string = commands.wb.ex(ctx.message)
+    if string:
+        await client.say(utility.textBlock(string))
+
+
+@client.command(pass_context=True, brief="Gets original owner of a line from the master database")
+async def info(ctx):
+    """
+        Usage: !info <line no. or '#'> - Same as !wb <#>, but gives you information about the owner of the line
+        Usage: !info build - Recreates info.txt with all the information about line owners
+            - ONLY USABLE BY BOT OWNER!
+            - Requires reading through all the files. Should not be used except the first time for a server!
+    """
+    if not utility.isAllowableServer(ctx.message.server.name):
+        return
+
+    string = commands.info.ex(ctx.message)
     if string:
         await client.say(utility.textBlock(string))
 

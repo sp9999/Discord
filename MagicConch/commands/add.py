@@ -1,102 +1,146 @@
 import utility
 import config
+import secret
 import commands.rem
 
 
-# ---------------------------------------------------------------------------------
-#
-# Description:  Help decipher and split up text from the !add trigger
-#
-# ---------------------------------------------------------------------------------
-def decipher_add_string(message):  # param_string = !add <nick> <entry>
-    param_string = message.content
+class AddCommand:
+    def __init__(self, message):
+        self.server = message.server.name
+        self.isValid = True
+        self.isLink = False
+        self.isExcuse = False
+        self.doMaster = False
 
-    splitList = param_string.split(" ", 2)  # splitList = [!add, <nick>, <entry>]
-    if len(splitList) < 3 or not splitList[2]:
-        return "Usage: !add <nick> <string>"
+        split_list = message.content.split(" ", 2)  # split_list = [!add, <nick>, <entry>]
+        if len(split_list) < 3 or not split_list[2]:
+            self.isValid = False
+            return
 
-    cmd, name, string = splitList
-    string = string.strip()
-    string = string.replace('\n', ' ')
-    string = string.replace('  ', ' ')
+        cmd, self.name, string = split_list
+        string = string.strip()
+        string = string.replace('\n', ' ')
+        self.string = string.replace('  ', ' ')
 
-    if name == "link":  # !add link <alt-nick> <nick>
-        splitList = string.split(" ", 1)  # splitList = [<alt-nick>, <nick+garbage>]
+        if self.name == "link":          # !add link <alt-nick> <nick>
+            self.isLink = True
 
-        if len(splitList) != 2 or not splitList[1]:  # no second half
+        elif self.name == "excuse":      # !add excuse <1/2/3> <string>
+            self.isExcuse = True
+
+    # ---------------------------------------------------------------------------------
+    #
+    # Description:  Depending on type of add command, return error message with proper usage
+    #
+    # ---------------------------------------------------------------------------------
+    def error(self):
+        if self.isLink:
             return "Usage: !add link <alt-nick> <nick>"
-
-        altNick = splitList[0]  # altNick = <alt-nick>
-        splitList = splitList[1].split()  # splitList = [<nick>, garbage]
-        nick = splitList[0]  # nick = <nick>
-
-        string = altNick + " " + nick  # string = <alt-nick> <nick>
-
-    elif name == "excuse":  # !add excuse <1/2/3> <string>
-        splitList = string.split(" ", 1)  # splitList = [<1/2/3>, <string>]
-        if splitList[0].isdigit() is False:  # check to make sure is digit
+        elif self.isExcuse:
             return "Usage: !add excuse <1:start 2:subject 3:problem> <string>"
-        excuseIndex = int(splitList[0])
+        else:
+            return "Usage: !add <nick> <string>"
 
-        if len(splitList) != 2 or not splitList[1] or excuseIndex < 1 or excuseIndex > 3:  # no second half
-            return "Usage: !add excuse <1:start 2:subject 3:problem> <string>"
+    # ---------------------------------------------------------------------------------
+    #
+    # Description:  Properly sanitize input for !add link
+    #
+    # ---------------------------------------------------------------------------------
+    def link(self):
+        split_list = self.string.split(" ", 1)          # splitList = [<alt-nick>, <nick+garbage>]
 
-        excuseFiles = ["estart", "esubject", "eproblem"]
-        name = excuseFiles[excuseIndex - 1]  # name = <estart/esubject/eproblem>
-        string = splitList[1]  # string = <string>
+        if len(split_list) != 2 or not split_list[1]:   # no second half
+            self.isValid = False
 
-    return addwb_cmd(message.server.name, name, string)  # Call addwb_cmd(<nick>, <string>)
+        alt_nick = split_list[0]                        # alt_nick = <alt-nick>
+        split_list = split_list[1].split()              # splitList = [<nick>, garbage]
+        nick = split_list[0]                            # nick = <nick>
 
+        self.string = alt_nick + " " + nick             # string = <alt-nick> <nick>
 
-# ---------------------------------------------------------------------------------
-#
-# Usage:        addwb_cmd(<nick>, <string>, boolean write to master file)
-# Result:       Adds <string> to <nick>.txt and WB.txt
-#
-# ---------------------------------------------------------------------------------
-def addwb_cmd(server, param_nick, param_entry):
+    # ---------------------------------------------------------------------------------
+    #
+    # Description:  Properly sanitize input for !add excuse
+    #
+    # ---------------------------------------------------------------------------------
+    def excuse(self):
+        split_list = self.string.split(" ", 1)          # splitList = [<1/2/3>, <string>]
+        if split_list[0].isdigit() is False:            # check to make sure is digit
+            self.isValid = False
 
-    doMaster = param_nick not in config.AllSpecialFiles
-    if doMaster:
-        param_nick = utility.linkcheck(server, param_nick)
+        excuse_index = int(split_list[0])
 
-    if param_nick in config.SingleEntryFiles:
-        # delete file since we are writing new entry
-        utility.removeFile(utility.getFile(server, param_nick))
-    else:
-        # remove before adding to prevent duplicates
-        commands.rem.removewb_cmd(server, param_nick, param_entry, doMaster)
-    return wb_add(server, param_nick, param_entry, doMaster)
+        if len(split_list) != 2 or not split_list[1] or excuse_index < 1 or excuse_index > 3:  # no second half
+            self.isValid = False
 
+        self.name = config.ExcuseFiles[excuse_index - 1]      # name = <estart/esubject/eproblem>
+        self.string = split_list[1]                     # string = <string>
 
-# ---------------------------------------------------------------------------------
-#
-# Description:  Adds a line from <nick>.txt and wb.txt
-# Return:       Success or failure message for adding
-#
-# ---------------------------------------------------------------------------------
-def wb_add(server, param_nick, param_entry, param_doMaster=True):
-    masterFile = utility.getFile(server, config.MasterFile[0])
-    fileName = utility.getFile(server, param_nick)
+    # ---------------------------------------------------------------------------------
+    #
+    # Description: Prepares and validates adding of line
+    #
+    # ---------------------------------------------------------------------------------
+    def cmd(self):
+        if self.isLink:
+            self.link()
+        elif self.isExcuse:
+            self.excuse()
 
-    with open(fileName, "a", encoding="utf8") as inputFile, open(masterFile, "a", encoding="utf8") as inputMaster:
-        for i in range(3):
-            try:
-                inputFile.write(param_entry + "\n")
-                break
-            except OSError:
-                print("Error writing to \"%s\"" % fileName)
+        if not self.isValid:
+            return self.error()
 
-        if param_doMaster:
+        self.doMaster = self.name not in config.AllSpecialFiles and self.name not in secret.ServerUniqueFiles
+        if self.doMaster:
+            self.name = utility.linkcheck(self.server, self.name)
+
+        if self.name in config.SingleEntryFiles:
+            # delete file since we are writing new entry
+            utility.removeFile(utility.getFile(self.server, self.name))
+        else:
+            # remove before adding to prevent duplicates
+            commands.rem.wb_remove(self.server, self.name, self.string, self.doMaster)
+        return self.add()
+
+    # ---------------------------------------------------------------------------------
+    #
+    # Description:  Adds a line to <nick>.txt and both wb.txt, info.txt if needed
+    # Return:       Success or failure message for adding
+    #
+    # ---------------------------------------------------------------------------------
+    def add(self):
+        master_file = utility.getFile(self.server, config.MasterFile[0])
+        info_file = utility.getFile(self.server, config.UtilityFiles[5])
+        file_name = utility.getFile(self.server, self.name)
+
+        with open(file_name, "a", encoding="utf8") as inputFile, \
+                open(master_file, "a", encoding="utf8") as inputMaster, \
+                open(info_file, "a", encoding="utf8") as inputInfo:
+
             for i in range(3):
                 try:
-                    inputMaster.write(param_entry + "\n")
+                    inputFile.write(self.string + "\n")
                     break
                 except OSError:
-                    print("Error writing to \"%s\"" % masterFile)
+                    print("Error writing to \"%s\"" % file_name)
 
-    return "Added to %s: |%s|" % (param_nick, param_entry)
+            if self.doMaster:
+                for i in range(3):
+                    try:
+                        inputMaster.write(self.string + "\n")
+                        break
+                    except OSError:
+                        print("Error writing to \"%s\"" % master_file)
+                for i in range(3):
+                    try:
+                        inputInfo.write(self.name + "\n")
+                        break
+                    except OSError:
+                        print("Error writing to \"%s\"" % inputFile)
+
+        return "Added to %s: |%s|" % (self.name, self.string)
 
 
 def ex(message):
-    return decipher_add_string(message)
+    add = AddCommand(message)
+    return add.cmd()

@@ -24,6 +24,7 @@ UtilityFiles = [
     "ignore_channel",
     SingleEntryFiles[0],
     SingleEntryFiles[1],
+    "info",
 ]
 
 MasterFile = ["wb"]

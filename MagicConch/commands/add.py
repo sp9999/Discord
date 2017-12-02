@@ -90,7 +90,7 @@ class AddCommand:
         if not self.isValid:
             return self.error()
 
-        self.doMaster = self.name not in config.AllSpecialFiles and self.name not in secret.ServerUniqueFiles
+        self.doMaster = self.name not in config.AllSpecialFiles and self.name not in secret.ServerUniqueFiles[self.server]
         if self.doMaster:
             self.name = utility.linkcheck(self.server, self.name)
 

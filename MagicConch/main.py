@@ -13,6 +13,7 @@ import commands.timer
 import commands.info
 import utility
 import QuoteTimer
+import re
 
 # Setup client
 bot_prefix = "!"
@@ -188,6 +189,15 @@ async def on_message(message):
     if message.content.upper().find(config.SEMEN_DEMON[0].upper()) is not -1:
         string = commands.wb.ex_with_params(message.server.name, config.SEMEN_DEMON[1])
         await client.send_message(message.channel, utility.textBlock(string))
+
+    count = 0
+    for trigger in secret.SecretTriggerWords[message.server.name]:
+        compiled = re.compile(trigger, re.IGNORECASE)
+        result = compiled.search(message.content)
+        if result is not None:
+            response = secret.SecretTriggerWordsResponse[message.server.name][count]
+            await client.send_message(message.channel, utility.textBlock(">" + response))
+        count += 1
 
     await client.process_commands(message)
 

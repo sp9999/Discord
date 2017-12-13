@@ -2,6 +2,7 @@ import random
 import config
 import secret
 import os
+import discord
 
 
 # ---------------------------------------------------------------------------------
@@ -110,7 +111,7 @@ def recreateFileAndSwapLines(filename, tempfile, line1, line2):
 # ---------------------------------------------------------------------------------
 def remove(param_file, param_tempfile, param_lastline=False, param_entryno=None, param_line=None):
     if not doesFileExist(param_file):
-        return None
+        return None, None
 
     removedLine = ""
 
@@ -384,3 +385,10 @@ def isLineInFile(filename, line):
 
 def textBlock(string):
     return '```css\n' + string + '```'
+
+
+def wbBlock(number_string, quote):
+    if quote:
+        return '```css\n' + number_string + '```' + '`' + quote + '`'
+    else:
+        return textBlock(number_string)

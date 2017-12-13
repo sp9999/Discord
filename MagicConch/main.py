@@ -47,9 +47,9 @@ async def wb(ctx):
     if not utility.isAllowedEnvironment(ctx.message):
         return
 
-    string = commands.wb.ex(ctx.message)
-    if string:
-        await client.say(utility.textBlock(string))
+    number_string, line = commands.wb.ex(ctx.message)
+    if number_string:
+        await client.send_message(ctx.message.channel, utility.wbBlock(number_string, line))
 
 
 @client.command(pass_context=True, brief="Gets original owner of a line from the master database")
@@ -63,9 +63,9 @@ async def info(ctx):
     if not utility.isAllowableServer(ctx.message.server.name):
         return
 
-    string = commands.info.ex(ctx.message)
-    if string:
-        await client.say(utility.textBlock(string))
+    author, string = commands.info.ex(ctx.message)
+    if author:
+        await client.say(utility.wbBlock(author, string))
 
 
 @client.command(pass_context=True, brief="Generates an excuse")
@@ -181,9 +181,9 @@ async def on_message(message):
                 if not utility.isAllowedEnvironment(message):
                     return
 
-                string = commands.wb.ex_with_params(message.server.name)
-                if string:
-                    await client.send_message(message.channel, utility.textBlock(string))
+                number_string, line = commands.wb.ex_with_params(message.server.name)
+                if number_string:
+                    await client.send_message(message.channel, utility.wbBlock(number_string, line))
                     return
 
     if message.content.upper().find(config.SEMEN_DEMON[0].upper()) is not -1:

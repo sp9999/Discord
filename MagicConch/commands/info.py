@@ -28,9 +28,9 @@ class InfoCommand:
     # ---------------------------------------------------------------------------------
     def error(self):
         if self.isBuild:
-            return "Usage: !info build"
+            return "Usage: !info build", None
         else:
-            return "Usage: !info <#>"
+            return "Usage: !info <#>", None
 
     # --------------------------------------------------------------------------------
     #
@@ -45,9 +45,8 @@ class InfoCommand:
         info_text = utility.read_file(self.infoFile, self.entryNo)
 
         if info_text is not None and wb_text is not None:
-            return "[%s] %s" % (info_text[0], wb_text[0])
-
-        return "No information on this line"
+            return "[%s]" % info_text[0], "%s" % wb_text[0]
+        return "No information on this line", None
 
     # --------------------------------------------------------------------------------
     #
@@ -101,7 +100,7 @@ class InfoCommand:
         if self.isBuild:
             if self.message.author.name == secret.BOT_OWNER:
                 self.build()
-                line = "Info compiled successfully"
+                line = "Info compiled successfully", None
         else:
             line = self.read()
 

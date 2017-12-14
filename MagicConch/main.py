@@ -13,7 +13,7 @@ import commands.timer
 import commands.info
 import utility
 import QuoteTimer
-import re
+import commands.trigger
 
 # Setup client
 bot_prefix = "!"
@@ -25,6 +25,7 @@ logging.basicConfig(level=logging.ERROR)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 log.addHandler(handler)
+Triggers = {}
 
 
 @client.event
@@ -32,8 +33,11 @@ async def on_ready():
     print("Logged in as %s, id:  %s" % (client.user.name, client.user.id))
     await client.change_presence(game=discord.Game(type=0, name="SP's quotebot | !help"))
     for s in client.servers:
+        print("==== %s (%s)====" % (s.name, s.id))
         QuoteTimer.QuoteTimer(client, s).setup()
-        print("  - %s (%s)" % (s.name, s.id))
+        Triggers[s.name] = commands.trigger.TriggerCommand(s.name)
+        print(Triggers[s.name].load())
+        print("\n")
 
 
 @client.command(pass_context=True, brief="Reads a line from a file")
@@ -164,6 +168,22 @@ async def timer(ctx):
         await client.say(utility.textBlock(string))
 
 
+@client.command(pass_context=True, brief="Reload triggers for greentext to help moderate your server!")
+async def trigger(ctx):
+    """
+        Usage: !trigger - reloads trigger list, needed after modifying trigger file
+
+        Note: To add/remove triggers, just do !add/rem trigger <word/phrase>
+    """
+    if not utility.isAllowableServer(ctx.message.server.name):
+        return
+
+    if not utility.whitelist(ctx.message.server.name, ctx.message.author):
+        return
+
+    await client.say(utility.textBlock(Triggers[ctx.message.server.name].load()))
+
+
 @client.event
 async def on_message(message):
     if message.author.bot:
@@ -190,14 +210,9 @@ async def on_message(message):
         string = commands.wb.ex_with_params(message.server.name, config.SEMEN_DEMON[1])
         await client.send_message(message.channel, utility.textBlock(string))
 
-    count = 0
-    for trigger in secret.SecretTriggerWords[message.server.name]:
-        compiled = re.compile(trigger, re.IGNORECASE)
-        result = compiled.search(message.content)
-        if result is not None:
-            response = secret.SecretTriggerWordsResponse[message.server.name][count]
-            await client.send_message(message.channel, utility.textBlock(">" + response))
-        count += 1
+    triggered, count = Triggers[message.server.name].parse(message)
+    for i in range(count):
+        await client.send_message(message.channel, utility.textBlock(">" + triggered[i]))
 
     await client.process_commands(message)
 

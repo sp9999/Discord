@@ -28,8 +28,8 @@ class QuoteTimer:
         await asyncio.sleep(sleep_timer)
 
         if self.timer != 0:
-            string = commands.wb.ex_with_params(self.server.name)
-            if string:
+            number_string, line = commands.wb.ex_with_params(self.server.name)
+            if number_string:
                 channel = utility.getServerTimerChannel(self.server)
                 if channel is not None:
                     skip = False
@@ -38,6 +38,6 @@ class QuoteTimer:
                             skip = True
                             break
                     if not skip:
-                        await self.client.send_message(channel, utility.textBlock(string))
+                        await self.client.send_message(channel, utility.wbBlock(number_string, line))
         self.startTimer()
 

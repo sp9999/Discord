@@ -2,7 +2,10 @@ import random
 import config
 import secret
 import os
-import discord
+
+
+def TestFeature(server):
+    return server == secret.Servers[0]
 
 
 # ---------------------------------------------------------------------------------
@@ -65,6 +68,29 @@ def read_file(param_file, param_count=None, param_key=None):
         return keylines[finalcount][:-1], finalcount + 1, totalcount, keyIt[finalcount], len(lines)
 
     return lines[finalcount][:-1], finalcount + 1, totalcount
+
+# ---------------------------------------------------------------------------------
+#
+# Description:  Reads a <file> and returns all lines. Currently only used for trigger file
+# Return:       All lines
+#
+# ---------------------------------------------------------------------------------
+def read_all_file(param_file):
+    if not doesFileExist(param_file):
+        return
+
+    lines = []
+    lineIt = 1
+    with open(param_file, encoding="utf8") as fp:
+        for line in fp:
+            lines.append(line)
+            lineIt += 1
+
+    totalcount = len(lines)
+    if totalcount is 0:
+        return None
+
+    return lines
 
 
 def recreateFileAndSwapLines(filename, tempfile, line1, line2):
@@ -389,6 +415,6 @@ def textBlock(string):
 
 def wbBlock(number_string, quote):
     if quote:
-        return '```css\n' + number_string + '```' + '`' + quote + '`'
+        return '`' + number_string + ' ' + quote + '`'
     else:
         return textBlock(number_string)

@@ -11,6 +11,8 @@ import commands.add
 import commands.rem
 import commands.timer
 import commands.info
+import commands.judge
+import commands.countdown
 import utility
 import QuoteTimer
 import commands.trigger
@@ -92,6 +94,39 @@ async def excuse(ctx):
         await client.say(utility.textBlock(string))
 
 
+@client.command(pass_context=True, brief="Generates a john (smash-term, same functionality as excuse)")
+async def john(ctx):
+    """
+        Usage: !john <#1> <#2> <#3> - Generate a random excuse from three files (start, subject, problem).
+            Line: You can specify every entry no. for the three parts. '#' will use the latest entry.
+            Line: Use 0 for random for any entry. Ex: !excuse 0 0 # for only latest problem entry, the rest random.
+
+        Add: !add excuse <1/2/3> <string> - Add new line to one of the three excuse files.
+        Rem: !rem excuse <1/2/3> <string/#> - Remove line (either string matching or entry no.) from one of the three excuse files.
+        Format - <I didn't X because> <subject verb> <reason>.
+        Example - <I couldn't finish because> <I was> <working/drunk/being X>
+    """
+    if not utility.isAllowedEnvironment(ctx.message):
+        return
+
+    string = commands.excuse.ex(ctx.message)
+    if string:
+        await client.say(utility.textBlock(string))
+
+
+@client.command(pass_context=True, brief="Random number (default behavior is between 1-9)")
+async def judge(ctx):
+    """
+        Usage: !judge <#1> <#2> - Randoms a number between min-MAX (defaults to 1-9), all params optional
+    """
+    if not utility.isAllowedEnvironment(ctx.message):
+        return
+
+    string = commands.judge.ex(ctx.message)
+    if string:
+        await client.say(utility.textBlock(string))
+
+
 @client.command(pass_context=True, brief="Swaps two lines in a file. (Requires permissions)")
 async def swap(ctx):
     """
@@ -117,6 +152,7 @@ async def add(ctx):
         Usage: !add link <alt-nick> <nick> - allows redirect so that doing !wb <alt-nick> does !wb <nick> instead
         Usage: !add excuse <1:start 2:subject 3:problem> <string>
         Usage: !add ignore_channel <channel name> - prevents public commands (!wb, !excuse) from working in that channel
+        Usage: !add countdown <event name> <UNIX end time> - add to list returned in !countdown command
     """
     if not utility.isAllowableServer(ctx.message.server.name):
         return
@@ -175,13 +211,27 @@ async def trigger(ctx):
 
         Note: To add/remove triggers, just do !add/rem trigger <word/phrase>
     """
-    if not utility.isAllowableServer(ctx.message.server.name):
+    if not utility.isAllowedEnvironment(ctx.message):
         return
 
     if not utility.whitelist(ctx.message.server.name, ctx.message.author):
         return
 
     await client.say(utility.textBlock(Triggers[ctx.message.server.name].load()))
+
+
+@client.command(pass_context=True, brief="List all remaining time until countdown events in days/hours/minutes")
+async def countdown(ctx):
+    """
+        Usage: !countdown - list all events and time remaining for them
+    """
+    # Usage: !countdown <event name> <UNIX end time> - adds a countdown event
+    if not utility.isAllowedEnvironment(ctx.message):
+        return
+
+    string = commands.countdown.ex(ctx.message)
+    if string:
+        await client.say(utility.textBlockNoStyle(string))
 
 
 @client.event
@@ -207,8 +257,9 @@ async def on_message(message):
                     return
 
     if message.content.upper().find(config.SEMEN_DEMON[0].upper()) is not -1:
-        string = commands.wb.ex_with_params(message.server.name, config.SEMEN_DEMON[1])
-        await client.send_message(message.channel, utility.textBlock(string))
+        number_string, line = commands.wb.ex_with_params(message.server.name, config.SEMEN_DEMON[1])
+        if number_string:
+            await client.send_message(message.channel, utility.wbBlock(number_string, line))
 
     triggered, count = Triggers[message.server.name].parse(message)
     for i in range(count):

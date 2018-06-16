@@ -14,7 +14,7 @@ class UtilityTests(unittest.TestCase):
 
         input_files = ("test.txt", "test2.txt", "wb.txt", "invalid")
         mock_osWalk.return_value = [(path, (), input_files)]
-        files = utility.getFilesInPath(path)
+        files = utility .getFilesInPath(path)
 
         assert len(files) == 2
         assert input_files[2][2] not in files

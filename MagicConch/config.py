@@ -7,6 +7,7 @@
 # ServerDefaultTimer = { Servers[0]: 0, Servers[1]: 3600 }
 # ServerDefaultIgnoreChannels = { Servers[0]: [], Servers[1]: ["general", "techtalk"]}
 
+
 ExcuseFiles = [
     "estart",
     "esubject",
@@ -18,6 +19,16 @@ SingleEntryFiles = [
     "timer_time",
 ]
 
+UtilityFilesIndex = {
+    "link": 0,
+    "whitelist": 1,
+    "ignore_channel": 2,
+    "timer_channel": 3,
+    "timer_time": 4,
+    "info": 5,
+    "countdown": 6
+}
+
 UtilityFiles = [
     "link",
     "whitelist",
@@ -25,6 +36,7 @@ UtilityFiles = [
     SingleEntryFiles[0],
     SingleEntryFiles[1],
     "info",
+    "countdown",
 ]
 
 MasterFile = ["wb"]

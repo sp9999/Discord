@@ -4,10 +4,6 @@ import secret
 import os
 
 
-def TestFeature(server):
-    return server == secret.Servers[0]
-
-
 # ---------------------------------------------------------------------------------
 #
 # Description:  Reads a <file> and returns a line. Can specify which line and search terms
@@ -68,6 +64,7 @@ def read_file(param_file, param_count=None, param_key=None):
         return keylines[finalcount][:-1], finalcount + 1, totalcount, keyIt[finalcount], len(lines)
 
     return lines[finalcount][:-1], finalcount + 1, totalcount
+
 
 # ---------------------------------------------------------------------------------
 #
@@ -413,8 +410,12 @@ def textBlock(string):
     return '```css\n' + string + '```'
 
 
+def textBlockNoStyle(string):
+    return '```\n' + string + '```'
+
+
 def wbBlock(number_string, quote):
     if quote:
-        return '`' + number_string + ' ' + quote + '`'
+        return '`' + number_string + '` ' + quote 
     else:
         return textBlock(number_string)
